@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument(
         "ages",
         nargs="*",
-        default=["28", "29"],
+        default=["24", "25"],
         help="나이 목록 (예: 21 22). 기본값: 28 29",
     )
     args = parser.parse_args()
