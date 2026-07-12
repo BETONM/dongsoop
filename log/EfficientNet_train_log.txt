@@ -1,0 +1,88 @@
+Epoch [1/30] (13s) | Train Loss: 1.9649, Acc: 36.43% | Val Loss: 2.1806, Acc: 24.53%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [2/30] (13s) | Train Loss: 1.8514, Acc: 41.13% | Val Loss: 2.1350, Acc: 25.47%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [3/30] (13s) | Train Loss: 1.8227, Acc: 40.19% | Val Loss: 2.1055, Acc: 24.06%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [4/30] (13s) | Train Loss: 1.7274, Acc: 46.18% | Val Loss: 2.0666, Acc: 24.53%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [5/30] (13s) | Train Loss: 1.6516, Acc: 51.12% | Val Loss: 2.0308, Acc: 25.47%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [6/30] (13s) | Train Loss: 1.6002, Acc: 49.71% | Val Loss: 2.0203, Acc: 28.77%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [7/30] (12s) | Train Loss: 1.5250, Acc: 52.53% | Val Loss: 2.0048, Acc: 29.25%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [8/30] (13s) | Train Loss: 1.4913, Acc: 52.76% | Val Loss: 1.9761, Acc: 31.13%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [9/30] (13s) | Train Loss: 1.4058, Acc: 55.11% | Val Loss: 1.9514, Acc: 33.96%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [10/30] (12s) | Train Loss: 1.3552, Acc: 59.58% | Val Loss: 1.9394, Acc: 34.43%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [11/30] (13s) | Train Loss: 1.2805, Acc: 60.75% | Val Loss: 1.9371, Acc: 34.43%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [12/30] (13s) | Train Loss: 1.2229, Acc: 62.75% | Val Loss: 1.9305, Acc: 33.02%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [13/30] (13s) | Train Loss: 1.2023, Acc: 63.22% | Val Loss: 1.9121, Acc: 34.43%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [14/30] (13s) | Train Loss: 1.0961, Acc: 67.80% | Val Loss: 1.9045, Acc: 34.91%
+
+✨ 최고 성능 갱신! 모델을 구글 드라이브에 안전하게 저장합니다.
+
+Epoch [15/30] (13s) | Train Loss: 1.0694, Acc: 69.92% | Val Loss: 1.9097, Acc: 34.43%
+
+Epoch [16/30] (12s) | Train Loss: 0.9938, Acc: 72.03% | Val Loss: 1.9102, Acc: 35.38%
+
+Epoch [17/30] (12s) | Train Loss: 0.9230, Acc: 74.85% | Val Loss: 1.9057, Acc: 35.85%
+
+Epoch [18/30] (12s) | Train Loss: 0.9329, Acc: 72.62% | Val Loss: 1.9069, Acc: 35.85%
+
+Epoch [19/30] (13s) | Train Loss: 0.8270, Acc: 78.03% | Val Loss: 1.9225, Acc: 35.38%
+
+Epoch [20/30] (12s) | Train Loss: 0.7712, Acc: 80.14% | Val Loss: 1.9361, Acc: 35.38%
+
+Epoch [21/30] (12s) | Train Loss: 0.7248, Acc: 81.67% | Val Loss: 1.9261, Acc: 35.38%
+
+Epoch [22/30] (13s) | Train Loss: 0.6483, Acc: 84.61% | Val Loss: 1.9481, Acc: 34.91%
+
+Epoch [23/30] (14s) | Train Loss: 0.6105, Acc: 85.90% | Val Loss: 1.9764, Acc: 32.55%
+
+Epoch [24/30] (13s) | Train Loss: 0.5923, Acc: 85.55% | Val Loss: 1.9898, Acc: 31.60%
+
+Epoch [25/30] (12s) | Train Loss: 0.5164, Acc: 89.66% | Val Loss: 2.0280, Acc: 32.55%
+
+Epoch [26/30] (12s) | Train Loss: 0.4812, Acc: 89.07% | Val Loss: 2.0214, Acc: 34.91%
+
+Epoch [27/30] (12s) | Train Loss: 0.4400, Acc: 91.07% | Val Loss: 2.0552, Acc: 30.66%
+
+Epoch [28/30] (12s) | Train Loss: 0.4222, Acc: 90.95% | Val Loss: 2.0652, Acc: 31.13%
+
+Epoch [29/30] (12s) | Train Loss: 0.3841, Acc: 92.60% | Val Loss: 2.0856, Acc: 30.19%
+
+Epoch [30/30] (12s) | Train Loss: 0.3496, Acc: 92.95% | Val Loss: 2.1008, Acc: 31.60% 
+
