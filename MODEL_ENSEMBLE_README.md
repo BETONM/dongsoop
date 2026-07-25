@@ -4,6 +4,24 @@
 
 이 브랜치에는 모델 학습 코드와 앙상블 평가 코드만 포함합니다. 데이터셋과 `.pth` 가중치 파일은 용량이 커서 GitHub 커밋에서 제외했습니다.
 
+## 가중치 파일
+
+앙상블 평가에 필요한 `.pth` 가중치 5개는 Google Drive로 따로 공유합니다.
+
+- 파일명: `ahin_ensemble_weights.zip`
+- 다운로드 링크: https://drive.google.com/file/d/1hvyBeymi6YeBHeARHzFzxnwtQo39XM3N/view?usp=sharing
+
+압축을 해제하면 아래처럼 `models/...` 경로가 유지됩니다. repo 루트에서 압축을 풀면 README의 실행 명령어를 그대로 사용할 수 있습니다.
+
+```text
+models/
+  final12_mixed_convnext_tiny_no_weights/best_model.pth
+  final12_mixed_efficientnet_b1_no_weights/best_model.pth
+  final12_mixed_convnext_tiny_strong_ls01_no_weights/best_model.pth
+  final12_mixed_efficientnet_b1/best_model.pth
+  final12_mixed_convnext_tiny_strong_ls01/best_model.pth
+```
+
 ## 포함 파일
 
 - `model.py`: 데이터 로딩, transform, 모델 생성, metric helper
