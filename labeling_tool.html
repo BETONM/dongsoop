@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏷️ 동숲 라벨링 도구</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c1d;
+    --surface: rgba(255,255,255,0.04);
+    --surface-hover: rgba(255,255,255,0.08);
+    --surface-active: rgba(255,255,255,0.12);
+    --border: rgba(255,255,255,0.08);
+    --text: #e8e8f0;
+    --text-dim: #8888a8;
+    --accent: #6c63ff;
+    --accent-glow: rgba(108,99,255,0.3);
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --sidebar-w: 220px;
+    --header-h: 56px;
+    --tabs-h: 48px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Header ── */
+  .header {
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(12,12,29,0.95);
+    backdrop-filter: blur(12px);
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  .header-stats .count {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  /* ── Main Layout ── */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    background: rgba(12,12,29,0.6);
+  }
+  .sidebar-title {
+    padding: 14px 16px 8px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+  .char-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 8px;
+  }
+  .char-list::-webkit-scrollbar { width: 4px; }
+  .char-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .char-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 4px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+  .char-btn:hover { background: var(--surface-hover); }
+  .char-btn.active {
+    background: var(--surface-active);
+    border-color: var(--char-color, var(--accent));
+    box-shadow: 0 0 12px var(--char-color-glow, var(--accent-glow));
+  }
+  .char-btn .thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .char-btn .info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+  }
+  .char-btn .kr-name {
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .char-btn .en-name {
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .char-btn .badge {
+    margin-left: auto;
+    background: var(--char-color, var(--accent));
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    flex-shrink: 0;
+  }
+  .char-key {
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--surface);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-right: 2px;
+    font-weight: 600;
+    flex-shrink: 0;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  /* ── Content Area ── */
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    background: rgba(12,12,29,0.4);
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 16px;
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s;
+    border-bottom: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .tab:hover { color: var(--text); background: var(--surface-hover); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    background: var(--surface);
+  }
+  .tab .tab-label { font-weight: 600; }
+  .tab .tab-progress {
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab .tab-bar {
+    width: 60px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tab .tab-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+    transition: width 0.3s;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+  .filter-btns {
+    display: flex;
+    gap: 4px;
+  }
+  .filter-btn {
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { background: var(--surface-hover); color: var(--text); }
+  .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .toolbar .spacer { flex: 1; }
+  .toolbar .info-text { color: var(--text-dim); font-size: 12px; }
+
+  /* ── Image Grid ── */
+  .grid-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .grid-container::-webkit-scrollbar { width: 6px; }
+  .grid-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .img-card {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    background: var(--surface);
+  }
+  .img-card:hover {
+    transform: scale(1.04);
+    border-color: rgba(255,255,255,0.15);
+    z-index: 2;
+  }
+  .img-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .img-card.labeled {
+    border-color: var(--label-color, var(--accent));
+    box-shadow: 0 0 10px var(--label-glow, var(--accent-glow));
+  }
+  .img-card .label-tag {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 3px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    color: #000;
+    background: var(--label-color, var(--accent));
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .img-card.labeled .label-tag { opacity: 1; }
+  .img-card .size-info {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 9px;
+    color: rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.6);
+    padding: 1px 5px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .img-card:hover .size-info { opacity: 1; }
+
+  /* ── No selection state ── */
+  .no-char-hint {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--warning);
+    color: #000;
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 100;
+    pointer-events: none;
+    animation: fadeInUp 0.3s;
+    box-shadow: 0 4px 20px rgba(251,191,36,0.3);
+  }
+  @keyframes fadeInUp {
+    from { opacity:0; transform: translateX(-50%) translateY(10px); }
+    to { opacity:1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* ── Footer ── */
+  .footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    background: rgba(12,12,29,0.6);
+  }
+  .export-btn {
+    padding: 10px 28px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #6c63ff, #4f46e5);
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(108,99,255,0.3);
+  }
+  .export-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(108,99,255,0.4);
+  }
+  .export-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .footer-info {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ── Loading ── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    font-size: 16px;
+    color: var(--text-dim);
+  }
+  .loading .spinner {
+    width: 24px; height: 24px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 14px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 200;
+    animation: slideIn 0.3s;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .toast.success { background: #065f46; color: #6ee7b7; }
+  .toast.error { background: #7f1d1d; color: #fca5a5; }
+  @keyframes slideIn { from { opacity:0; transform:translateX(40px); } }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal {
+    background: #1a1a2e;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+  }
+  .modal h2 { margin-bottom: 12px; font-size: 20px; }
+  .modal p { color: var(--text-dim); margin-bottom: 24px; font-size: 14px; line-height: 1.6; }
+  .modal-btns { display: flex; gap: 12px; justify-content: center; }
+  .modal-btns button {
+    padding: 10px 28px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .modal-btns .btn-cancel { background: var(--surface); color: var(--text); }
+  .modal-btns .btn-confirm { background: var(--accent); color: #fff; border: none; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <h1>🏷️ 동숲 라벨링 도구</h1>
+  <div class="header-stats">
+    <span>전체 라벨: <span class="count" id="totalLabeled">0</span> / <span id="totalTarget">200</span></span>
+    <span>|</span>
+    <span>선택된 캐릭터: <strong id="selectedCharName" style="color:var(--accent)">없음</strong></span>
+  </div>
+</header>
+
+<div class="main">
+  <!-- Sidebar: Character Selection -->
+  <aside class="sidebar">
+    <div class="sidebar-title">캐릭터 선택</div>
+    <div class="char-list" id="charList"></div>
+  </aside>
+
+  <!-- Content: Image Grid -->
+  <section class="content">
+    <nav class="tabs" id="tabs"></nav>
+
+    <div class="toolbar">
+      <div class="filter-btns">
+        <button class="filter-btn active" data-filter="all">전체</button>
+        <button class="filter-btn" data-filter="unlabeled">미라벨</button>
+        <button class="filter-btn" data-filter="labeled">라벨됨</button>
+      </div>
+      <div class="spacer"></div>
+      <span class="info-text" id="gridInfo">이미지 로딩 중...</span>
+    </div>
+
+    <div class="grid-container" id="gridContainer">
+      <div class="loading"><div class="spinner"></div>이미지를 불러오는 중...</div>
+    </div>
+
+    <div class="footer">
+      <span class="footer-info" id="footerInfo">캐릭터를 선택한 뒤 이미지를 클릭하세요</span>
+      <button class="export-btn" id="exportBtn" disabled>📦 Export & 파일 이동</button>
+    </div>
+  </section>
+</div>
+
+<script>
+// ── Korean Names ──
+const KR = {
+  banilla:'바닐라', bboyami:'뿌야미', bianka:'비앙카', chamdori:'참돌이',
+  frank:'프랭크', geullahem:'그래험', jackson:'잭슨', marimo:'마리모',
+  master:'마스터', mati:'마티', saida:'사이다', yeoul:'여울'
+};
+
+// ── Character Colors ──
+const COLORS = {
+  banilla:'#FF6B6B', bboyami:'#4ECDC4', bianka:'#45B7D1', chamdori:'#96CEB4',
+  frank:'#FFEAA7', geullahem:'#DDA0DD', jackson:'#98D8C8', marimo:'#7ED321',
+  master:'#F7DC6F', mati:'#BB8FCE', saida:'#85C1E9', yeoul:'#F0B27A'
+};
+
+// ── Keyboard Shortcuts ──
+const KEYS = ['1','2','3','4','5','6','7','8','9','0','q','w'];
+
+// ── State ──
+let state = {
+  images: {},        // source -> image list
+  characters: [],    // character list
+  labels: {},        // image_path -> character_id
+  activeSource: null,
+  selectedChar: null,
+  filter: 'all',
+  target: 50
+};
+
+// ── Init ──
+async function init() {
+  const resp = await fetch('/api/data');
+  const data = await resp.json();
+  state.images = data.images;
+  state.characters = data.characters;
+  state.labels = data.labels || {};
+  state.target = data.target;
+
+  document.getElementById('totalTarget').textContent = Object.keys(state.images).length * state.target;
+
+  renderCharacters();
+  renderTabs();
+  // Activate first tab
+  const sources = Object.keys(state.images);
+  if (sources.length) {
+    state.activeSource = sources[0];
+    updateTabs();
+    renderGrid();
+  }
+  updateStats();
+  setupEvents();
+}
+
+// ── Render Characters ──
+function renderCharacters() {
+  const list = document.getElementById('charList');
+  list.innerHTML = '';
+  state.characters.forEach((char, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'char-btn';
+    btn.dataset.id = char.id;
+    const color = COLORS[char.id] || '#888';
+    btn.style.setProperty('--char-color', color);
+    btn.style.setProperty('--char-color-glow', color + '40');
+    const krName = KR[char.id] || char.id;
+    const key = KEYS[i] || '';
+    const count = Object.values(state.labels).filter(v => v === char.id).length;
+    btn.innerHTML = `
+      <span class="char-key">${key}</span>
+      ${char.ref_image ? `<img class="thumb" src="/${char.ref_image}" alt="${krName}" loading="lazy">` : '<div class="thumb"></div>'}
+      <div class="info">
+        <span class="kr-name">${krName}</span>
+        <span class="en-name">${char.id}</span>
+      </div>
+      <span class="badge">${count}</span>
+    `;
+    btn.addEventListener('click', () => selectCharacter(char.id));
+    list.appendChild(btn);
+  });
+}
+
+// ── Select Character ──
+function selectCharacter(charId) {
+  state.selectedChar = (state.selectedChar === charId) ? null : charId;
+  document.querySelectorAll('.char-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.id === state.selectedChar);
+  });
+  const nameEl = document.getElementById('selectedCharName');
+  if (state.selectedChar) {
+    nameEl.textContent = KR[state.selectedChar] || state.selectedChar;
+    nameEl.style.color = COLORS[state.selectedChar] || 'var(--accent)';
+  } else {
+    nameEl.textContent = '없음';
+    nameEl.style.color = 'var(--accent)';
+  }
+}
+
+// ── Render Tabs ──
+function renderTabs() {
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML = '';
+  
+  // 동적 라벨 생성 로직 (예: "21/111" -> "21세 남성")
+  const getSourceLabel = (src) => {
+    const parts = src.split('/');
+    if (parts.length === 2) {
+      const age = parts[0];
+      const gender = parts[1] === '111' ? '남성' : parts[1] === '112' ? '여성' : parts[1];
+      return `${age}세 ${gender}`;
+    }
+    return src;
+  };
+
+  Object.keys(state.images).forEach(src => {
+    const tab = document.createElement('button');
+    tab.className = 'tab';
+    tab.dataset.source = src;
+    const labeled = Object.keys(state.labels).filter(p => p.startsWith(src+'/')).length;
+    const pct = Math.round((labeled / state.target) * 100);
+    tab.innerHTML = `
+      <span class="tab-label">${getSourceLabel(src)}</span>
+      <span class="tab-progress">
+        ${labeled}/${state.target}
+        <span class="tab-bar"><span class="tab-bar-fill" style="width:${Math.min(pct,100)}%"></span></span>
+      </span>
+    `;
+    tab.addEventListener('click', () => {
+      state.activeSource = src;
+      updateTabs();
+      renderGrid();
+    });
+    tabsEl.appendChild(tab);
+  });
+}
+
+function updateTabs() {
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.source === state.activeSource);
+    // Update progress
+    const src = tab.dataset.source;
+    const labeled = Object.keys(state.labels).filter(p => p.startsWith(src+'/')).length;
+    const pct = Math.round((labeled / state.target) * 100);
+    tab.querySelector('.tab-progress').innerHTML = `
+      ${labeled}/${state.target}
+      <span class="tab-bar"><span class="tab-bar-fill" style="width:${Math.min(pct,100)}%"></span></span>
+    `;
+    if (labeled >= state.target) {
+      tab.querySelector('.tab-bar-fill').style.background = 'var(--success)';
+    }
+  });
+}
+
+// ── Render Grid ──
+function renderGrid() {
+  const container = document.getElementById('gridContainer');
+  const imgs = state.images[state.activeSource] || [];
+  let filtered = imgs;
+  if (state.filter === 'labeled') {
+    filtered = imgs.filter(img => state.labels[img.path]);
+  } else if (state.filter === 'unlabeled') {
+    filtered = imgs.filter(img => !state.labels[img.path]);
+  }
+
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+
+  filtered.forEach(img => {
+    const card = document.createElement('div');
+    card.className = 'img-card';
+    card.dataset.path = img.path;
+
+    const labelChar = state.labels[img.path];
+    if (labelChar) {
+      const color = COLORS[labelChar] || '#888';
+      card.classList.add('labeled');
+      card.style.setProperty('--label-color', color);
+      card.style.setProperty('--label-glow', color + '30');
+    }
+
+    card.innerHTML = `
+      <img src="/${img.path}" alt="${img.name}" loading="lazy">
+      <span class="size-info">${img.w}×${img.h}</span>
+      <span class="label-tag">${labelChar ? (KR[labelChar] || labelChar) : ''}</span>
+    `;
+
+    card.addEventListener('click', () => handleImageClick(img.path));
+    grid.appendChild(card);
+  });
+
+  container.innerHTML = '';
+  container.appendChild(grid);
+
+  // Update grid info
+  const total = imgs.length;
+  const labeledCount = imgs.filter(img => state.labels[img.path]).length;
+  document.getElementById('gridInfo').textContent = 
+    `표시: ${filtered.length}장 / 전체: ${total}장 (라벨: ${labeledCount})`;
+}
+
+// ── Handle Image Click ──
+async function handleImageClick(imgPath) {
+  const existing = state.labels[imgPath];
+
+  if (existing) {
+    // 이미 라벨된 이미지 → 라벨 해제
+    await fetch('/api/unlabel', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({path: imgPath})
+    });
+    delete state.labels[imgPath];
+    refreshCard(imgPath);
+    updateStats();
+    return;
+  }
+
+  if (!state.selectedChar) {
+    showHint();
+    return;
+  }
+
+  // 라벨 배정
+  await fetch('/api/label', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({path: imgPath, character: state.selectedChar})
+  });
+  state.labels[imgPath] = state.selectedChar;
+  refreshCard(imgPath);
+  updateStats();
+}
+
+function refreshCard(imgPath) {
+  const card = document.querySelector(`.img-card[data-path="${CSS.escape(imgPath)}"]`);
+  if (!card) return;
+
+  const labelChar = state.labels[imgPath];
+  if (labelChar) {
+    const color = COLORS[labelChar] || '#888';
+    card.classList.add('labeled');
+    card.style.setProperty('--label-color', color);
+    card.style.setProperty('--label-glow', color + '30');
+    card.querySelector('.label-tag').textContent = KR[labelChar] || labelChar;
+  } else {
+    card.classList.remove('labeled');
+    card.style.removeProperty('--label-color');
+    card.style.removeProperty('--label-glow');
+    card.querySelector('.label-tag').textContent = '';
+  }
+
+  // If filter is active, might need to hide/show
+  if (state.filter === 'labeled' && !labelChar) card.style.display = 'none';
+  if (state.filter === 'unlabeled' && labelChar) card.style.display = 'none';
+}
+
+// ── Update Stats ──
+function updateStats() {
+  const total = Object.keys(state.labels).length;
+  document.getElementById('totalLabeled').textContent = total;
+  updateTabs();
+  renderCharacters(); // Update badge counts
+  // Re-select active character
+  if (state.selectedChar) selectCharacter(state.selectedChar);
+
+  // Enable export when there are labels
+  document.getElementById('exportBtn').disabled = total === 0;
+  document.getElementById('footerInfo').textContent = 
+    total > 0 ? `${total}개 이미지가 라벨링됨` : '캐릭터를 선택한 뒤 이미지를 클릭하세요';
+}
+
+// ── Hint Toast ──
+let hintTimeout;
+function showHint() {
+  let hint = document.querySelector('.no-char-hint');
+  if (hint) { hint.remove(); clearTimeout(hintTimeout); }
+  hint = document.createElement('div');
+  hint.className = 'no-char-hint';
+  hint.textContent = '⚠️ 먼저 왼쪽에서 캐릭터를 선택하세요!';
+  document.body.appendChild(hint);
+  hintTimeout = setTimeout(() => hint.remove(), 2000);
+}
+
+// ── Toast Notification ──
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+// ── Export ──
+function showExportModal() {
+  const total = Object.keys(state.labels).length;
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <h2>📦 Export 확인</h2>
+      <p>
+        <strong>${total}개</strong> 이미지를 각 캐릭터 폴더로 복사합니다.<br>
+        (원본 파일은 그대로 유지됩니다)
+      </p>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="this.closest('.modal-overlay').remove()">취소</button>
+        <button class="btn-confirm" id="confirmExport">확인</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.getElementById('confirmExport').addEventListener('click', async () => {
+    overlay.remove();
+    try {
+      const resp = await fetch('/api/export', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'});
+      const data = await resp.json();
+      if (data.ok) {
+        showToast(`✅ ${data.copied}개 파일이 성공적으로 복사되었습니다!`);
+        if (data.errors.length) {
+          showToast(`⚠️ ${data.errors.length}개 오류 발생`, 'error');
+        }
+      }
+    } catch(e) {
+      showToast('❌ Export 실패: ' + e.message, 'error');
+    }
+  });
+}
+
+// ── Events ──
+function setupEvents() {
+  // Filter buttons
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.filter = btn.dataset.filter;
+      renderGrid();
+    });
+  });
+
+  // Export button
+  document.getElementById('exportBtn').addEventListener('click', showExportModal);
+
+  // Keyboard shortcuts
+  document.addEventListener('keydown', e => {
+    // Ignore if focused on input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const keyIdx = KEYS.indexOf(e.key);
+    if (keyIdx >= 0 && keyIdx < state.characters.length) {
+      selectCharacter(state.characters[keyIdx].id);
+      e.preventDefault();
+    }
+  });
+}
+
+// ── Start ──
+init();
+</script>
+</body>
+</html>
