@@ -2,8 +2,11 @@
 
 ## 1. 구성 요소
 content/
+
     ㄴ best_model.pth   // eva02 모델 전이학습을 통해 개발한 가중치 파일
+
     ㄴ classes.txt      // 동물의 숲 캐릭터 12명의 이름이 들어있는 txt 파일
+    
     ㄴ test.jpg         // 테스트용 .jpg 이미지 파일
 
 ## 2. requirements.txt    모델 개발에 사용된 라이브러리 버전
