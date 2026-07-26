@@ -1,0 +1,12 @@
+0	banilla
+1	bboyami
+2	bianka
+3	chamdori
+4	frank
+5	geullahem
+6	jackson
+7	marimo
+8	master
+9	mati
+10	saida
+11	yeoul
