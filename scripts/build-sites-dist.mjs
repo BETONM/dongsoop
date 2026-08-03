@@ -2,6 +2,7 @@ import { cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 
 rmSync("dist", { recursive: true, force: true });
 cpSync("frontend/dist", "dist", { recursive: true });
+cpSync("frontend/dist", "dist/public", { recursive: true });
 
 mkdirSync("dist/.openai", { recursive: true });
 writeFileSync(
