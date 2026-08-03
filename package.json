@@ -1,0 +1,11 @@
+{
+  "name": "dongsoop-frontend-deploy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm --prefix frontend ci && npm --prefix frontend run build"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
