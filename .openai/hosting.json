@@ -1,0 +1,6 @@
+{
+  "project_id": "appgprj_6a70b2534e78819182085f76dd2dd272",
+  "app_dir": "frontend",
+  "build_command": "npm run build",
+  "output_dir": "frontend/dist"
+}
