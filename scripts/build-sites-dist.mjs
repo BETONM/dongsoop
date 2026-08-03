@@ -4,7 +4,10 @@ rmSync("dist", { recursive: true, force: true });
 cpSync("frontend/dist", "dist", { recursive: true });
 
 mkdirSync("dist/.openai", { recursive: true });
-cpSync(".openai/hosting.json", "dist/.openai/hosting.json");
+writeFileSync(
+  "dist/.openai/hosting.json",
+  `${JSON.stringify({ project_id: "appgprj_6a70b2534e78819182085f76dd2dd272" }, null, 2)}\n`,
+);
 
 mkdirSync("dist/server", { recursive: true });
 writeFileSync(
