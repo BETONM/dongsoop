@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "npm --prefix frontend ci && npm --prefix frontend run build && node scripts/copy-frontend-dist.mjs"
+    "build": "npm --prefix frontend ci && npm --prefix frontend run build && node scripts/build-sites-dist.mjs"
   },
   "engines": {
     "node": ">=20"
