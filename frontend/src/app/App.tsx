@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, Camera, X } from "lucide-react";
 import characterImg from "../imports/image.png";
+import loginCharImg from "../imports/Apple.png";
 import tomNookImg from "../imports/image-1.png";
 import acBgImg from "../imports/Animal_Crossing-01.jpg";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Screen =
+  | "google-login"
   | "character-input"
   | "mission-intro"
   | "find-partner"
@@ -414,12 +416,183 @@ function PhotoUpload({ preview, onSelect, onClear, icon = "📸" }: {
 // SCREENS
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// 00. Google Login ────────────────────────────────────────────────────────────
+
+function ScreenGoogleLogin({ onLogin }: { onLogin: () => void }) {
+  return (
+    <div className="flex flex-col h-full overflow-y-auto relative" style={{ scrollbarWidth: "none" }}>
+      <Sky /><Clouds />
+      <div className="relative z-10 flex flex-col">
+        <Title />
+        <Grass />
+
+        {/* character */}
+        <div className="flex justify-center mt-5 mb-2">
+          <div className="relative">
+            <div
+              className="w-32 h-32 rounded-full flex items-center justify-center overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg,#A8E4FC,#C0F4D8)",
+                border: "4px solid rgba(255,255,255,0.9)",
+                boxShadow: "0 6px 20px rgba(60,160,220,0.25)",
+              }}
+            >
+              <img src={loginCharImg} alt="캐릭터"
+                className="w-full h-full object-cover"
+                style={{ objectPosition: "center 15%", transform: "scale(1.3)" }} />
+            </div>
+            <span className="absolute -top-1 -right-1 text-xl select-none">✨</span>
+            <span className="absolute -bottom-1 -left-1 text-lg select-none">🌿</span>
+          </div>
+        </div>
+
+        {/* welcome speech bubble */}
+        <div className="relative mx-4 mb-5 mt-3">
+          <div className="rounded-3xl px-5 py-4" style={{
+            background: "rgba(255,255,255,0.92)",
+            border: "2px solid rgba(140,210,100,0.50)",
+            color: "#3A5020",
+            fontFamily: "'Noto Sans KR', sans-serif",
+            boxShadow: "0 3px 12px rgba(60,140,30,0.10)",
+          }}>
+            <p className="font-black text-base mb-1" style={{ color: "#283818" }}>
+              🏝️ 프메의 숲에 오신 것을 환영해요!
+            </p>
+            <p className="text-sm leading-relaxed" style={{ color: "#5A7840" }}>
+              미션을 시작하려면 먼저 로그인해주세요.
+            </p>
+          </div>
+          {/* bubble tail */}
+          <div className="absolute left-9 -bottom-2.5 w-0 h-0"
+            style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "11px solid rgba(140,210,100,0.50)" }} />
+          <div className="absolute left-9 -bottom-1.5 w-0 h-0"
+            style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: "9px solid rgba(255,255,255,0.92)" }} />
+        </div>
+
+        {/* buttons & guide */}
+        <div className="px-4 flex flex-col gap-3 mt-2 pb-6">
+          {/* Google login button */}
+          <button
+            onClick={onLogin}
+            className="w-full flex items-center justify-center gap-3 rounded-2xl py-3.5 font-black text-sm transition-all active:scale-95"
+            style={{
+              background: "#fff",
+              border: "2.5px solid rgba(140,210,100,0.55)",
+              color: "#283818",
+              fontFamily: "'Noto Sans KR', sans-serif",
+              boxShadow: "0 5px 0 rgba(140,210,100,0.35), 0 6px 16px rgba(60,140,30,0.12)",
+              cursor: "pointer",
+              outline: "none",
+              letterSpacing: "0.02em",
+            }}
+            onPointerDown={(e) => {
+              e.currentTarget.style.transform = "translateY(4px)";
+              e.currentTarget.style.boxShadow = "0 1px 0 rgba(140,210,100,0.35)";
+            }}
+            onPointerUp={(e) => {
+              e.currentTarget.style.transform = "";
+              e.currentTarget.style.boxShadow = "0 5px 0 rgba(140,210,100,0.35), 0 6px 16px rgba(60,140,30,0.12)";
+            }}
+            onPointerLeave={(e) => {
+              e.currentTarget.style.transform = "";
+              e.currentTarget.style.boxShadow = "0 5px 0 rgba(140,210,100,0.35), 0 6px 16px rgba(60,140,30,0.12)";
+            }}
+          >
+            {/* Google logo SVG */}
+            <svg width="20" height="20" viewBox="0 0 48 48">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              <path fill="none" d="M0 0h48v48H0z"/>
+            </svg>
+            Google로 시작하기
+          </button>
+
+          {/* guide text */}
+          <p className="text-center text-xs" style={{ color: "#90A880", fontFamily: "'Noto Sans KR', sans-serif" }}>
+            로그인 후 이름과 캐릭터 정보를 입력할 수 있어요.
+          </p>
+
+          {/* decorative stickers */}
+          <div className="flex justify-center gap-4 pt-3 opacity-55 select-none text-2xl">
+            {["🌻","🍄","🐝","🌸","🍃"].map((e, i) => <span key={i}>{e}</span>)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // 1. Character Input ───────────────────────────────────────────────────────────
+
+const CHARACTERS = ["여울","글라햄","마티","마리모","바닐라","마스터","잭슨","비앙카","참돌이","프랭크","뽀야미","사이다"];
+
+function CharacterSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-sm font-black pl-1" style={{ color: "#3A6020", fontFamily: "'Noto Sans KR', sans-serif" }}>
+        <span className="mr-1">✨</span>캐릭터명 (얼굴 인식 결과)
+      </label>
+      {/* selector trigger */}
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full px-4 py-3 rounded-2xl text-sm text-left flex items-center justify-between"
+        style={{
+          background: open ? "#fff" : "rgba(255,255,255,0.80)",
+          border: `2px solid ${open ? "#68C040" : value ? "#68C040" : "rgba(140,200,100,0.45)"}`,
+          color: value ? "#283818" : "#9CAE88",
+          fontFamily: "'Noto Sans KR', sans-serif",
+          boxShadow: open ? "0 0 0 3px rgba(100,200,60,0.15)" : "none",
+          transition: "all 120ms",
+        }}
+      >
+        <span>{value || "캐릭터를 선택해주세요"}</span>
+        <svg
+          width="16" height="16" viewBox="0 0 16 16" fill="none"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 180ms", color: "#68C040", flexShrink: 0 }}
+        >
+          <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {/* expanded character grid */}
+      {open && (
+        <div className="rounded-2xl overflow-hidden"
+          style={{ border: "2px solid rgba(140,200,100,0.45)", background: "rgba(255,255,255,0.95)", boxShadow: "0 4px 16px rgba(60,140,30,0.12)" }}>
+          <div className="p-3 flex flex-wrap gap-2 max-h-44 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+            {CHARACTERS.map(c => {
+              const selected = c === value;
+              return (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => { onChange(c); setOpen(false); }}
+                  className="px-3 py-1.5 rounded-full text-sm font-bold transition-all"
+                  style={{
+                    fontFamily: "'Noto Sans KR', sans-serif",
+                    background: selected ? "#E8F8F0" : "rgba(240,255,245,0.7)",
+                    border: `2px solid ${selected ? "#68C040" : "rgba(140,200,100,0.35)"}`,
+                    color: selected ? "#3A6020" : "#5A8040",
+                    boxShadow: selected ? "0 0 0 1px rgba(100,200,60,0.2)" : "none",
+                  }}
+                >
+                  {c}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ScreenCharacterInput({ onSubmit }: { onSubmit: (d: UserData) => void }) {
   const [name, setName] = useState("");
   const [character, setCharacter] = useState("");
-  const ready = name.trim() && character.trim();
+  const ready = name.trim() && character;
 
   return (
     <div className="flex flex-col h-full overflow-y-auto relative" style={{ scrollbarWidth: "none" }}>
@@ -441,7 +614,7 @@ function ScreenCharacterInput({ onSubmit }: { onSubmit: (d: UserData) => void })
           <Card>
             <div className="flex flex-col gap-4">
               <Input emoji="🌱" label="이름" placeholder="홍길동" value={name} onChange={setName} />
-              <Input emoji="✨" label="캐릭터명 (얼굴 인식 결과)" placeholder="뽀야미" value={character} onChange={setCharacter} />
+              <CharacterSelect value={character} onChange={setCharacter} />
             </div>
           </Card>
           <Btn onClick={() => ready && onSubmit({ name: name.trim(), character: character.trim() })}
@@ -1207,7 +1380,7 @@ function ScreenFinalComplete() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export default function App() {
-  const [screen, setScreen]   = useState<Screen>("character-input");
+  const [screen, setScreen]   = useState<Screen>("google-login");
   const [isEditMode, setIsEditMode] = useState(false);
   const [user, setUser]       = useState<UserData>({ name: "", character: "" });
   const [partner, setPartner] = useState("잭슨");
@@ -1287,6 +1460,7 @@ export default function App() {
         <div className="absolute inset-0 z-10 flex flex-col pt-14">
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-hidden flex flex-col">
+              {screen === "google-login"    && <ScreenGoogleLogin onLogin={() => setScreen("character-input")} />}
               {screen === "character-input" && <ScreenCharacterInput onSubmit={handleCharacterSubmit} />}
               {screen === "mission-intro"   && <ScreenMissionIntro partner={partner} onStart={() => setScreen("find-partner")} />}
               {screen === "find-partner"   && <ScreenFindPartner partner={partner} onFound={() => setScreen("mission1")} />}
