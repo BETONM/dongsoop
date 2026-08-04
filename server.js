@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('./config/db'); // 방금 만든 db.js 모듈 불러오기
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
@@ -7,19 +8,14 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(cors());
 
-// // const todoApi = require('./api/todo');
-// // const userApi = require('./api/user');
-// // const routineApi = require('./api/routine');
-// // const diaryApi = require('./api/diary');
-// const authApi = require('./api/auth');
-// const requireAuth = require('./middleware/requireAuth');
+const missionApi = require('./api/mission');
+const authApi = require('./api/auth');
+const requireAuth = require('./middleware/requireAuth');
 
-// // app.use('/api/todo', requireAuth, todoApi);
-// // app.use('/api/user', requireAuth, userApi);
-// // app.use('/api/routine', requireAuth, routineApi);
-// // app.use('/api/diary', requireAuth, diaryApi);
-// app.use('/api/auth', authApi);
+app.use('/api/mission', requireAuth, missionApi);
+app.use('/api/auth', authApi);
 
 // 기본 서버 연결 테스트
 app.get('/', (req, res) => {

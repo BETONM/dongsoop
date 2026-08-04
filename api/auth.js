@@ -1,4 +1,3 @@
-require('dotenv').config();
 const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
@@ -13,7 +12,7 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 router.get('/dev-token', (req, res) => {
     // test 유저의 정보로 JWT 토큰 강제 생성
     const testToken = jwt.sign(
-        { id: "5ffd29b8-a3cc-4de2-85c8-aabd2178e06d", googld_id: "dev_test_123" }, 
+        {  google_id: "dev_test_123" }, 
         process.env.JWT_SECRET, 
         { expiresIn: '7d' }
     );
@@ -24,8 +23,11 @@ router.get('/dev-token', (req, res) => {
 router.post('/google', async (req, res) => {
     const { idToken } = req.body; // 안드로이드에서 보내준 구글 영수증(토큰)
 
-    if (!idToken) {
-        return res.status(400).json({ success: false, message: "idToken이 필요합니다." });
+    if (typeof idToken !== "string" || idToken.trim() === "") {
+        return res.status(400).json({ 
+            success: false, 
+            message: "idToken이 필요합니다." 
+        });
     }
 
     try {
@@ -37,53 +39,61 @@ router.post('/google', async (req, res) => {
         const payload = ticket.getPayload();
         
         // payload 안에는 구글이 보증하는 유저 정보가 들어있어!
-        const google_id = payload['sub']; // 구글 유저의 고유 ID (이게 핵심!)
-        const email = payload['email'];
-        const username = payload['name'];
+        const google_id = payload.sub; // 구글 유저의 고유 ID (이메일 주소 아님)
 
         // 2. 우리 DB(USERS 테이블)에 이 구글 유저가 이미 가입되어 있는지 확인
-        let userQuery = await db.query('SELECT * FROM USERS WHERE google_id = $1', [google_id]);
+        let userQuery = await db.query(
+            'SELECT * FROM USERS WHERE google_id = $1', [google_id]
+        );
         let user = userQuery.rows[0];
+        let isNewUser = false;
 
         // 3. 만약 처음 온 유저라면? -> 새로 가입(INSERT) 시켜주기
         if (!user) {
             const insertQuery = `
-                INSERT INTO USERS (google_id, email, username)
-                VALUES ($1, $2, $3)
+                INSERT INTO USERS (google_id)
+                VALUES ($1)
                 RETURNING *;
             `;
-            const insertResult = await db.query(insertQuery, [google_id, email, username]);
+            const insertResult = await db.query(insertQuery, [google_id]);
             user = insertResult.rows[0];
-            console.log("🎉 새로운 유저 가입 완료:", user.username);
+
+            isNewUser = true;
+
+            console.log("🎉 새로운 유저 가입 완료:", user.google_id);
         } else {
-            console.log("👋 기존 유저 로그인:", user.username);
+            console.log("👋 기존 유저 로그인:", user.google_id);
         }
 
         // 4. 가입/로그인이 끝났으니, 우리 서버만의 'JWT 출입증' 발급해주기
-        // (이 출입증에 user.id와 google_id를 담아둠)
+        // (이 출입증에 google_id를 담아둠)
         const token = jwt.sign(
-            { id: user.id, google_id: user.google_id }, 
+            { google_id: user.google_id }, 
             JWT_SECRET, 
-            { expiresIn: '7d' } // 출입증 유효기간은 7일!
+            { expiresIn: '7d' } // 출입증 유효기간은 7일
         );
 
         // 5. 안드로이드에게 출입증(token)과 유저 정보 던져주기
         res.json({
             success: true,
-            message: "로그인 성공!",
-            data: {
-                token: token,
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email
-                }
+            message: "로그인 성공",
+            isNewUser, 
+            token, 
+            user: {
+                google_id: user.google_id,
+                name: user.name, 
+                char_name: user.char_name, 
+                completed_mission: user.completed_mission, 
+                developer_verified: user.developer_verified
             }
         });
 
     } catch (err) {
         console.error('구글 로그인 에러:', err);
-        res.status(401).json({ success: false, message: "유효하지 않은 구글 토큰입니다.", error: err.message });
+        res.status(401).json({ 
+            success: false, 
+            message: "유효하지 않은 구글 토큰입니다." 
+        });
     }
 });
 
