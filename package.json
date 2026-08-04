@@ -1,0 +1,34 @@
+{
+  "name": "dongsoop-backend",
+  "version": "1.0.0",
+  "description": "prometheus project: dongsoop backend",
+  "keywords": [
+    "dongsoop"
+  ],
+  "homepage": "https://github.com/BETONM/dongsoop#readme",
+  "bugs": {
+    "url": "https://github.com/BETONM/dongsoop/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BETONM/dongsoop.git"
+  },
+  "license": "ISC",
+  "author": "seho",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "google-auth-library": "^11.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "mysql2": "^3.23.2",
+    "nodemon": "^3.1.14",
+    "pg": "^8.22.0"
+  }
+}
