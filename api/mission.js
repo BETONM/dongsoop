@@ -279,4 +279,90 @@ router.patch('/2', async (req, res) => {
     }
 });
 
+router.patch('/3', async (req, res) => {
+    const google_id = req.user.google_id;
+    const { image } = req.body;
+
+    if (typeof image !== "string" || image.trim() === "") {
+        return res.status(400).json({
+            success: false,
+            message: "사진을 업로드해주세요."
+        });
+    }
+
+    const client = await db.connect();
+
+    try {
+        const imageBuffer = Buffer.from(image, "base64");
+
+        if (imageBuffer.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "올바르지 않은 이미지입니다."
+            });
+        }
+        
+        await client.query("BEGIN");
+
+        const updateQuery = `
+            UPDATE mission3
+            SET 
+                image = $1,
+                completed = TRUE
+            WHERE google_id = $2 AND completed = false
+            RETURNING *
+        `;
+
+        const updateResult = await client.query(updateQuery, [ imageBuffer, google_id ]);
+
+        const mission3 = updateResult.rows[0];
+
+        if (!mission3) {
+            await client.query("ROLLBACK");
+            return res.status(404).json({
+                success: false, 
+                message: "유효하지 않은 mission3 입니다. "
+            });
+        }
+
+        const updateUserQuery = `
+            UPDATE USERS
+            SET completed_mission = 3
+            WHERE google_id = $1
+            RETURNING *
+        `;
+
+        const updateUserResult = await client.query(updateUserQuery, [ google_id ]);
+
+        const user = updateUserResult.rows[0];
+
+        if (!user) {
+            await client.query("ROLLBACK");
+            return res.status(404).json({
+                success: false, 
+                message: "유효하지 않은 user 입니다. "
+            });
+        }
+
+        await client.query("COMMIT");
+        
+        return res.status(200).json({
+            success: true, 
+            message: "every mission completed!!", 
+            completed: true
+        });
+    }
+    catch (err) {
+        await client.query("ROLLBACK");
+        console.error("mission3 완료 오류:", err);
+        res.status(500).json({
+            success: false, 
+            message: "서버 오류 발생"
+        });
+    }
+    finally {
+        client.release();
+    }
+});
+
 module.exports = router;
