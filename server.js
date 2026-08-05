@@ -10,12 +10,14 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
 
-const missionApi = require('./api/mission');
 const authApi = require('./api/auth');
+const missionApi = require('./api/mission');
+const userApi = require('./api/user');
 const requireAuth = require('./middleware/requireAuth');
 
-app.use('/api/mission', requireAuth, missionApi);
 app.use('/api/auth', authApi);
+app.use('/api/mission', requireAuth, missionApi);
+app.use('/api/user', requireAuth, userApi);
 
 // 기본 서버 연결 테스트
 app.get('/', (req, res) => {
