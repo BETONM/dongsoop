@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 
 const { createMission2 } = require('../utils/missionGenerator');
+const { createMission3 } = require('../utils/missionGenerator');
 
 router.get('/', async (req, res) => {
     const google_id = req.user.google_id;

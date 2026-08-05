@@ -14,10 +14,12 @@ const authApi = require('./api/auth');
 const missionApi = require('./api/mission');
 const userApi = require('./api/user');
 const requireAuth = require('./middleware/requireAuth');
+const historyApi = require('./api/history');
 
 app.use('/api/auth', authApi);
 app.use('/api/mission', requireAuth, missionApi);
 app.use('/api/user', requireAuth, userApi);
+app.use('/api/history', requireAuth, historyApi);
 
 // 기본 서버 연결 테스트
 app.get('/', (req, res) => {
