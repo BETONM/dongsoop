@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 
+const { createMission2 } = require('../utils/missionGenerator');
+
 router.get('/', async (req, res) => {
     const google_id = req.user.google_id;
 
@@ -73,6 +75,7 @@ router.get('/', async (req, res) => {
                     mission: {
                         number: 2, 
                         target_char: mission2.target_char, 
+                        mission: mission2.mission, 
                         completed: mission2.completed
                     }
                 });
@@ -118,6 +121,74 @@ router.get('/', async (req, res) => {
             success: false, 
             message: "서버 오류 발생"
         });
+    }
+});
+
+router.patch('/1', async (req, res) => {
+    const google_id = req.user.google_id;
+
+    const client = await db.connect();
+
+    try {
+        await client.query("BEGIN");
+
+        const updateQuery = `
+            UPDATE mission1
+            SET completed = TRUE
+            WHERE google_id = $1
+            RETURNING *
+        `;
+
+        const updateResult = await client.query(updateQuery, [ google_id ]);
+
+        const mission1 = updateResult.rows[0];
+
+        if (!mission1) {
+            await client.query("ROLLBACK");
+            return res.status(404).json({
+                success: false, 
+                message: "유효하지 않은 mission1 입니다. "
+            });
+        }
+
+        const updateUserQuery = `
+            UPDATE USERS
+            SET completed_mission = 1
+            WHERE google_id = $1
+            RETURNING *
+        `;
+
+        const updateUserResult = await client.query(updateUserQuery, [ google_id ]);
+
+        const user = updateUserResult.rows[0];
+
+        if (!user) {
+            await client.query("ROLLBACK");
+            return res.status(404).json({
+                success: false, 
+                message: "유효하지 않은 user 입니다. "
+            });
+        }
+
+        await createMission2(client, google_id);        
+
+        await client.query("COMMIT");
+        
+        return res.status(200).json({
+            success: true, 
+            message: "mission1 clear"
+        });
+    }
+    catch (err) {
+        await client.query("ROLLBACK");
+        console.error("mission1 완료 오류:", err);
+        res.status(500).json({
+            success: false, 
+            message: "서버 오류 발생"
+        });
+    }
+    finally {
+        client.release();
     }
 });
 
