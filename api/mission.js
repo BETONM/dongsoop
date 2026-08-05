@@ -133,10 +133,36 @@ router.patch('/1', async (req, res) => {
     try {
         await client.query("BEGIN");
 
+        const searchQuery = `
+            SELECT completed_mission
+            FROM USERS
+            WHERE google_id = $1
+        `;
+
+        const searchResult = await client.query(searchQuery, [ google_id ]);
+        const searchUser = searchResult.rows[0];
+        if (!searchUser) {
+            await client.query("ROLLBACK");
+
+            return res.status(404).json({
+                success: false,
+                message: "사용자 없음"
+            });
+        }
+        if (searchUser.completed_mission !== 0) {
+            await client.query("ROLLBACK");
+            
+            return res.status(400).json({
+                success: false,
+                message: "현재 진행 중인 미션이 아닙니다."
+            });
+        }
+
         const updateQuery = `
             UPDATE mission1
             SET completed = TRUE
             WHERE google_id = $1
+                AND completed = FALSE
             RETURNING *
         `;
 
@@ -156,6 +182,7 @@ router.patch('/1', async (req, res) => {
             UPDATE USERS
             SET completed_mission = 1
             WHERE google_id = $1
+                AND completed_mission = 0
             RETURNING *
         `;
 
@@ -218,6 +245,31 @@ router.patch('/2', async (req, res) => {
         
         await client.query("BEGIN");
 
+        const searchQuery = `
+            SELECT completed_mission
+            FROM USERS
+            WHERE google_id = $1
+        `;
+
+        const searchResult = await client.query(searchQuery, [ google_id ]);
+        const searchUser = searchResult.rows[0];
+        if (!searchUser) {
+            await client.query("ROLLBACK");
+
+            return res.status(404).json({
+                success: false,
+                message: "사용자 없음"
+            });
+        }
+        if (searchUser.completed_mission !== 1) {
+            await client.query("ROLLBACK");
+            
+            return res.status(400).json({
+                success: false,
+                message: "현재 진행 중인 미션이 아닙니다."
+            });
+        }
+
         const updateQuery = `
             UPDATE mission2
             SET 
@@ -243,6 +295,7 @@ router.patch('/2', async (req, res) => {
             UPDATE USERS
             SET completed_mission = 2
             WHERE google_id = $1
+                AND completed_mission = 1
             RETURNING *
         `;
 
@@ -305,6 +358,32 @@ router.patch('/3', async (req, res) => {
         
         await client.query("BEGIN");
 
+        const searchQuery = `
+            SELECT completed_mission
+            FROM USERS
+            WHERE google_id = $1
+        `;
+
+        const searchResult = await client.query(searchQuery, [ google_id ]);
+        const searchUser = searchResult.rows[0];
+        if (!searchUser) {
+            await client.query("ROLLBACK");
+
+            return res.status(404).json({
+                success: false,
+                message: "사용자 없음"
+            });
+        }
+        if (searchUser.completed_mission !== 2) {
+            await client.query("ROLLBACK");
+            
+            return res.status(400).json({
+                success: false,
+                message: "현재 진행 중인 미션이 아닙니다."
+            });
+        }
+
+
         const updateQuery = `
             UPDATE mission3
             SET 
@@ -330,6 +409,7 @@ router.patch('/3', async (req, res) => {
             UPDATE USERS
             SET completed_mission = 3
             WHERE google_id = $1
+                AND completed_mission = 2
             RETURNING *
         `;
 
