@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/db');
 
-const CHARACTERS = [ "바닐라", "마리모", "글라햄", "잭슨", "비앙카", "참돌이", 
-                     "마티", "사이다", "마스터", "프랭크", "뽀야미", "여울" ];
+const CHARACTERS = require('../constants/characters');
+const { createMission1 } = require('../utils/missionGenerator');
 
 router.get('/', (req, res) => {
     res.json({ success: true, message: "user api 성공" });
@@ -97,6 +97,8 @@ router.patch('/profile', async (req, res) => {
             });
         }
 
+        await createMission1(db, google_id);
+
         res.status(200).json({
             success: true, 
             message: "사용자 정보 수정 완료", 
@@ -105,7 +107,7 @@ router.patch('/profile', async (req, res) => {
                 name: user.name, 
                 char_name: user.char_name, 
                 completed_mission: user.completed_mission, 
-                deㅍeloper_verified: user.developer_verified
+                developer_verified: user.developer_verified
             }
         });
     }

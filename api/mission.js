@@ -8,4 +8,8 @@ router.get('/', (req, res) => {
     res.json({ success: true, message: "mission api 성공" });
 });
 
+router.get('/', (req, res) => {
+    
+});
+
 module.exports = router;
