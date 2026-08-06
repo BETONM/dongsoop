@@ -1031,7 +1031,7 @@ function ScreenMission2({ partner, missionText, photo, onPhoto, onClearPhoto, on
   partner: string; missionText: string; photo: string | null;
   onPhoto: (d: string) => void; onClearPhoto: () => void; onComplete: () => void; onBack: () => void;
 }) {
-  const title = formatMission2Title(partner, missionText);
+  const missionGuide = formatMission2Title(partner, missionText);
 
   return (
     <div className="flex flex-col h-full relative">
@@ -1050,15 +1050,15 @@ function ScreenMission2({ partner, missionText, photo, onPhoto, onClearPhoto, on
                   style={{ background: "#FFF4CC", color: "#9A7200", fontFamily: "'Noto Sans KR', sans-serif" }}>
                   미션 2
                 </span>
-                <h2 className="font-black text-sm leading-snug" style={{ color: "#283818", fontFamily: "'Noto Sans KR', sans-serif", whiteSpace: "pre-line" }}>
-                  {title}
+                <h2 className="font-black text-sm leading-snug" style={{ color: "#283818", fontFamily: "'Noto Sans KR', sans-serif" }}>
+                  {partner} 주민과 함께<br />사진을 찍어보세요!
                 </h2>
               </div>
             </div>
           </Card>
 
           <SpeechBubble emoji="📷">
-            안내된 미션을 완료한 뒤 인증 사진이나 스크린샷을 올려주세요.
+            <span style={{ whiteSpace: "pre-line" }}>{missionGuide}</span>
           </SpeechBubble>
 
           <PhotoUpload preview={photo} onSelect={onPhoto} onClear={onClearPhoto} />
