@@ -26,7 +26,7 @@ type Screen =
 interface UserData { name: string; character: string; }
 
 const PARTNERS = ["잭슨", "뽀야미", "너굴", "이자벨", "블랑"];
-const TIMER_TOTAL = 180;
+const TIMER_TOTAL = 90;
 
 // ── Sky / Clouds / Grass ──────────────────────────────────────────────────────
 
@@ -941,14 +941,14 @@ function ScreenMission1({ partner, onClear, onBack }: { partner: string; onClear
                   미션 1
                 </span>
                 <h2 className="font-black text-sm leading-snug" style={{ color: "#283818", fontFamily: "'Noto Sans KR', sans-serif" }}>
-                  {partner} 주민과 3분 동안<br />이야기를 나누어보세요!
+                  {partner} 주민과 1분 30초 동안<br />이야기를 나누어보세요!
                 </h2>
               </div>
             </div>
           </Card>
 
           <SpeechBubble emoji="🌿">
-            섬에서 새 친구를 만났어요. 3분 동안 천천히 이야기를 나누며 서로를 알아가 보세요.
+            섬에서 새 친구를 만났어요. 1분 30초 동안 천천히 이야기를 나누며 서로를 알아가 보세요.
           </SpeechBubble>
 
           <div className="flex justify-center">
@@ -1096,7 +1096,7 @@ function ScreenMission3({ partner, photo, onPhoto, onClearPhoto, onComplete, onB
                   미션 3
                 </span>
                 <h2 className="font-black text-sm leading-snug" style={{ color: "#283818", fontFamily: "'Noto Sans KR', sans-serif" }}>
-                  프로메테우스 스티커를 들고<br />함께 사진을 찍어보세요!
+                  프메의 숲 스티커를 들고<br />함께 사진을 찍어보세요!
                 </h2>
               </div>
             </div>
@@ -1271,9 +1271,9 @@ function ScreenMissionHistory({ partner, mission2Text, photo2, photo3, onBack }:
   partner: string; mission2Text: string; photo2: string | null; photo3: string | null; onBack: () => void;
 }) {
   const missions = [
-    { n: 1, title: `${partner} 주민과 3분 대화`, type: "timer", emoji: "💬", bg: "#A8E4C0" },
+    { n: 1, title: `${partner} 주민과 1분 30초 대화`, type: "timer", emoji: "💬", bg: "#A8E4C0" },
     { n: 2, title: formatMission2Title(partner, mission2Text), type: "photo", emoji: "📸", bg: "#7DD4F0", photo: photo2 },
-    { n: 3, title: "스티커 들고 함께 사진", type: "photo", emoji: "🎉", bg: "#FFB870", photo: photo3 },
+    { n: 3, title: "프메의 숲 스티커 들고 함께 사진", type: "photo", emoji: "🎉", bg: "#FFB870", photo: photo3 },
   ];
   return (
     <div className="flex flex-col h-full relative">
@@ -1310,7 +1310,7 @@ function ScreenMissionHistory({ partner, mission2Text, photo2, photo3, onBack }:
                     style={{ background: "#F0FFF4", border: "1.5px solid rgba(140,210,100,0.40)" }}>
                     <span>⏱️</span>
                     <p className="text-xs font-black" style={{ color: "#4A8030", fontFamily: "'Noto Sans KR', sans-serif" }}>
-                      3분 대화 완료
+                      1분 30초 대화 완료
                     </p>
                   </div>
                 )}
