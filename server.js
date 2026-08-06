@@ -23,7 +23,13 @@ app.use('/api/mission', requireAuth, missionApi);
 app.use('/api/user', requireAuth, userApi);
 app.use('/api/history', requireAuth, historyApi);
 
-app.use(express.static(frontendPath));
+app.use(express.static(frontendPath, {
+    etag: false,
+    maxAge: 0,
+    setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    }
+}));
 
 // DB 연결 테스트 API 생성
 app.get('/test-db', async (req, res) => {
@@ -46,6 +52,7 @@ app.get('/test-db', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
@@ -54,6 +61,7 @@ app.use((req, res, next) => {
         return next();
     }
 
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     return res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
