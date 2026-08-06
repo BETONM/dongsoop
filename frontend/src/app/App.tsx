@@ -885,43 +885,13 @@ function ScreenFindPartner({ partner, onFound }: { partner: string; onFound: () 
 
 // 3. Mission 1 — Timer ────────────────────────────────────────────────────────
 
-function ScreenMission1({ partner, onClear, onBack }: { partner: string; onClear: () => void; onBack: () => void }) {
-  const [seconds, setSeconds] = useState(TIMER_TOTAL);
-  const [running, setRunning] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const startTimeRef = useRef<number | null>(null);
-  const elapsedRef = useRef<number>(0); // accumulated elapsed seconds before pause
-  const rafRef = useRef<number | null>(null);
+function ScreenMission1({ partner, onClear, onBack, seconds, running, paused, onStart, onPause, onResume }: {
+  partner: string; onClear: () => void; onBack: () => void;
+  seconds: number; running: boolean; paused: boolean;
+  onStart: () => void; onPause: () => void; onResume: () => void;
+}) {
   const done = seconds === 0;
   const started = running || paused || done;
-
-  useEffect(() => {
-    if (!running || done) return;
-
-    const tick = () => {
-      const elapsed = elapsedRef.current + (Date.now() - startTimeRef.current!) / 1000;
-      const remaining = Math.max(0, TIMER_TOTAL - elapsed);
-      setSeconds(Math.ceil(remaining));
-      if (remaining > 0) {
-        rafRef.current = requestAnimationFrame(tick);
-      }
-    };
-
-    startTimeRef.current = Date.now();
-    rafRef.current = requestAnimationFrame(tick);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [running]);
-
-  const handleStart = () => { setRunning(true); setPaused(false); };
-
-  const handlePause = () => {
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    elapsedRef.current += (Date.now() - startTimeRef.current!) / 1000;
-    setRunning(false);
-    setPaused(true);
-  };
-
-  const handleResume = () => { setRunning(true); setPaused(false); };
 
   return (
     <div className="flex flex-col h-full relative">
@@ -956,20 +926,20 @@ function ScreenMission1({ partner, onClear, onBack }: { partner: string; onClear
           </div>
 
           {!started && (
-            <Btn onClick={handleStart} color="green" size="lg" fullWidth>
+            <Btn onClick={onStart} color="green" size="lg" fullWidth>
               💬 대화 시작하기
             </Btn>
           )}
           {running && !done && (
             <div className="flex gap-3">
-              <Btn onClick={handlePause} color="coral" size="lg" fullWidth>
+              <Btn onClick={onPause} color="coral" size="lg" fullWidth>
                 ⏸ 일시정지
               </Btn>
             </div>
           )}
           {paused && !done && (
             <div className="flex gap-3">
-              <Btn onClick={handleResume} color="green" size="lg" fullWidth>
+              <Btn onClick={onResume} color="green" size="lg" fullWidth>
                 ▶ 계속하기
               </Btn>
             </div>
@@ -1448,10 +1418,70 @@ export default function App() {
   const [photo3, setPhoto3]   = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [timerSeconds, setTimerSeconds] = useState(TIMER_TOTAL);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerPaused, setTimerPaused] = useState(false);
+  const timerStartRef = useRef<number | null>(null);
+  const timerElapsedRef = useRef(0);
+  const timerRafRef = useRef<number | null>(null);
 
   const missionScreens: Screen[] = ["mission1", "mid-clear", "mission2", "mission3", "all-complete", "mypage"];
   const showTabBar = missionScreens.includes(screen);
   const activeTab: "mission" | "mypage" = screen === "mypage" ? "mypage" : "mission";
+
+  useEffect(() => {
+    if (!timerRunning) return;
+
+    const tick = () => {
+      if (timerStartRef.current === null) return;
+      const elapsed = timerElapsedRef.current + (Date.now() - timerStartRef.current) / 1000;
+      const remaining = Math.max(0, TIMER_TOTAL - elapsed);
+      setTimerSeconds(Math.ceil(remaining));
+
+      if (remaining > 0) {
+        timerRafRef.current = requestAnimationFrame(tick);
+      } else {
+        setTimerRunning(false);
+        setTimerPaused(false);
+      }
+    };
+
+    timerStartRef.current = Date.now();
+    timerRafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (timerRafRef.current) cancelAnimationFrame(timerRafRef.current);
+    };
+  }, [timerRunning]);
+
+  const handleTimerStart = () => {
+    setTimerRunning(true);
+    setTimerPaused(false);
+  };
+
+  const handleTimerPause = () => {
+    if (timerRafRef.current) cancelAnimationFrame(timerRafRef.current);
+    if (timerStartRef.current !== null) {
+      timerElapsedRef.current += (Date.now() - timerStartRef.current) / 1000;
+    }
+    setTimerRunning(false);
+    setTimerPaused(true);
+  };
+
+  const handleTimerResume = () => {
+    setTimerRunning(true);
+    setTimerPaused(false);
+  };
+
+  const resetTimer = () => {
+    if (timerRafRef.current) cancelAnimationFrame(timerRafRef.current);
+    setTimerSeconds(TIMER_TOTAL);
+    setTimerRunning(false);
+    setTimerPaused(false);
+    timerStartRef.current = null;
+    timerElapsedRef.current = 0;
+    timerRafRef.current = null;
+  };
 
   const runAction = async (message: string, action: () => Promise<void>) => {
     setBusy(message);
@@ -1541,6 +1571,7 @@ export default function App() {
       await api.completeMission1();
       const mission = await api.getMission();
       applyMissionState(mission);
+      resetTimer();
       setCompletedCount(1);
       setMidClearFrom(1);
       setScreen("mid-clear");
@@ -1617,7 +1648,19 @@ export default function App() {
               {screen === "character-input" && <ScreenCharacterInput onSubmit={handleCharacterSubmit} initialUser={user} loading={Boolean(busy)} />}
               {screen === "mission-intro"   && <ScreenMissionIntro partner={partner} onStart={() => setScreen("find-partner")} />}
               {screen === "find-partner"   && <ScreenFindPartner partner={partner} onFound={() => setScreen("mission1")} />}
-              {screen === "mission1"        && <ScreenMission1 partner={partner} onClear={handleMission1Clear} onBack={() => setScreen("mission-intro")} />}
+              {screen === "mission1"        && (
+                <ScreenMission1
+                  partner={partner}
+                  onClear={handleMission1Clear}
+                  onBack={() => setScreen("mission-intro")}
+                  seconds={timerSeconds}
+                  running={timerRunning}
+                  paused={timerPaused}
+                  onStart={handleTimerStart}
+                  onPause={handleTimerPause}
+                  onResume={handleTimerResume}
+                />
+              )}
               {screen === "mid-clear"       && <ScreenMidClear from={midClearFrom} onNext={handleMidNext} />}
               {screen === "mission2"        && (
                 <ScreenMission2
