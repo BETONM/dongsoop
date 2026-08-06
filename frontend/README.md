@@ -43,10 +43,12 @@ VITE_USE_DEV_TOKEN=true
 - `VITE_GOOGLE_CLIENT_ID` : 실제 Google 로그인에 사용할 클라이언트 ID입니다.
 - `VITE_USE_DEV_TOKEN` : `true`면 Google 로그인 대신 `/api/auth/dev-token`으로 테스트합니다.
 
+현재 production 빌드는 `frontend/.env.production`을 통해 `https://dongsoop.onrender.com` 백엔드 API로 요청합니다.
+
 ## 배포 전 확인
 
 ```bash
 npm run build
 ```
 
-실제 배포 시에는 백엔드 배포 주소를 `VITE_API_BASE_URL`에 넣고 다시 빌드/배포해야 합니다.
+실제 Google 로그인을 켤 때는 `VITE_GOOGLE_CLIENT_ID`를 추가하고 다시 빌드/배포해야 합니다.
