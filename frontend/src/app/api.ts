@@ -34,6 +34,7 @@ export interface MissionHistory {
   mission1Done?: boolean;
   mission2Done?: boolean;
   mission3Done?: boolean;
+  mission2Text?: string;
   mission2Image?: string | null;
   mission3Image?: string | null;
   partner?: string;
@@ -180,6 +181,7 @@ export function normalizeHistory(payload: unknown): MissionHistory {
     mission1Done: boolValue(history.mission1Done ?? history.mission_1_done ?? mission1?.completed),
     mission2Done: boolValue(history.mission2Done ?? history.mission_2_done ?? mission2?.completed),
     mission3Done: boolValue(history.mission3Done ?? history.mission_3_done ?? mission3?.completed),
+    mission2Text: String(history.mission2Text ?? history.mission_2_text ?? mission2?.mission ?? ""),
     mission2Image: normalizeImageDataUrl(history.mission2Image ?? history.mission_2_image ?? history.photo2 ?? history.image2 ?? mission2?.image),
     mission3Image: normalizeImageDataUrl(history.mission3Image ?? history.mission_3_image ?? history.photo3 ?? history.image3 ?? mission3?.image),
     partner: String(history.partner ?? history.partnerCharacter ?? history.partner_character ?? history.targetCharacter ?? mission1?.target_char ?? mission2?.target_char ?? ""),

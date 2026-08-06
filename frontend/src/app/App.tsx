@@ -435,6 +435,18 @@ function PhotoUpload({ preview, onSelect, onClear, icon = "📸" }: {
   );
 }
 
+function formatMission2Title(partner: string, missionText: string) {
+  const fallback = "주민과 함께 사진 찍기";
+  const base = (missionText || fallback).trim();
+  const withPartner = partner
+    ? base.replace(/^주민과/, `${partner} 주민과`)
+    : base;
+
+  return withPartner
+    .replace(" 사진 ", " 사진\n")
+    .replace(" 인증", "\n인증");
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // SCREENS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1015,10 +1027,12 @@ function ScreenMidClear({ from, onNext }: { from: 1 | 2; onNext: () => void }) {
 
 // 5. Mission 2 — Photo ────────────────────────────────────────────────────────
 
-function ScreenMission2({ partner, photo, onPhoto, onClearPhoto, onComplete, onBack }: {
-  partner: string; photo: string | null;
+function ScreenMission2({ partner, missionText, photo, onPhoto, onClearPhoto, onComplete, onBack }: {
+  partner: string; missionText: string; photo: string | null;
   onPhoto: (d: string) => void; onClearPhoto: () => void; onComplete: () => void; onBack: () => void;
 }) {
+  const title = formatMission2Title(partner, missionText);
+
   return (
     <div className="flex flex-col h-full relative">
       <Sky />
@@ -1036,15 +1050,15 @@ function ScreenMission2({ partner, photo, onPhoto, onClearPhoto, onComplete, onB
                   style={{ background: "#FFF4CC", color: "#9A7200", fontFamily: "'Noto Sans KR', sans-serif" }}>
                   미션 2
                 </span>
-                <h2 className="font-black text-sm leading-snug" style={{ color: "#283818", fontFamily: "'Noto Sans KR', sans-serif" }}>
-                  {partner} 주민과 함께<br />사진을 찍어보세요!
+                <h2 className="font-black text-sm leading-snug" style={{ color: "#283818", fontFamily: "'Noto Sans KR', sans-serif", whiteSpace: "pre-line" }}>
+                  {title}
                 </h2>
               </div>
             </div>
           </Card>
 
           <SpeechBubble emoji="📷">
-            방금 이야기를 나눈 주민과 함께 추억을 남겨보세요.
+            안내된 미션을 완료한 뒤 인증 사진이나 스크린샷을 올려주세요.
           </SpeechBubble>
 
           <PhotoUpload preview={photo} onSelect={onPhoto} onClear={onClearPhoto} />
@@ -1253,12 +1267,12 @@ function ScreenMyPage({ user, partner, completedCount, onHistory, onEdit, onAdmi
 
 // 9. Mission History ───────────────────────────────────────────────────────────
 
-function ScreenMissionHistory({ partner, photo2, photo3, onBack }: {
-  partner: string; photo2: string | null; photo3: string | null; onBack: () => void;
+function ScreenMissionHistory({ partner, mission2Text, photo2, photo3, onBack }: {
+  partner: string; mission2Text: string; photo2: string | null; photo3: string | null; onBack: () => void;
 }) {
   const missions = [
     { n: 1, title: `${partner} 주민과 3분 대화`, type: "timer", emoji: "💬", bg: "#A8E4C0" },
-    { n: 2, title: `${partner} 주민과 함께 사진`, type: "photo", emoji: "📸", bg: "#7DD4F0", photo: photo2 },
+    { n: 2, title: formatMission2Title(partner, mission2Text), type: "photo", emoji: "📸", bg: "#7DD4F0", photo: photo2 },
     { n: 3, title: "스티커 들고 함께 사진", type: "photo", emoji: "🎉", bg: "#FFB870", photo: photo3 },
   ];
   return (
@@ -1427,6 +1441,7 @@ export default function App() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [user, setUser]       = useState<UserData>({ name: "", character: "" });
   const [partner, setPartner] = useState("잭슨");
+  const [mission2Text, setMission2Text] = useState("");
   const [completedCount, setCompletedCount] = useState(0);
   const [midClearFrom, setMidClearFrom] = useState<1 | 2>(1);
   const [photo2, setPhoto2]   = useState<string | null>(null);
@@ -1458,6 +1473,7 @@ export default function App() {
   const applyMissionState = (mission: MissionStatus, fallbackPartner = partner) => {
     const nextPartner = mission.partner || mission.targetCharacter || fallbackPartner;
     if (nextPartner) setPartner(nextPartner);
+    if (mission.missionText) setMission2Text(mission.missionText);
     const nextCount = Math.max(0, Math.min(3, mission.completedCount ?? 0));
     setCompletedCount(nextCount);
     return { nextPartner, nextCount };
@@ -1562,6 +1578,7 @@ export default function App() {
       if (history.partner || history.targetCharacter) {
         setPartner(history.partner || history.targetCharacter || partner);
       }
+      if (history.mission2Text) setMission2Text(history.mission2Text);
       if (history.mission2Image) setPhoto2(history.mission2Image);
       if (history.mission3Image) setPhoto3(history.mission3Image);
       setCompletedCount([history.mission1Done, history.mission2Done, history.mission3Done].filter(Boolean).length);
@@ -1604,7 +1621,7 @@ export default function App() {
               {screen === "mid-clear"       && <ScreenMidClear from={midClearFrom} onNext={handleMidNext} />}
               {screen === "mission2"        && (
                 <ScreenMission2
-                  partner={partner} photo={photo2}
+                  partner={partner} missionText={mission2Text} photo={photo2}
                   onPhoto={setPhoto2}
                   onClearPhoto={() => setPhoto2(null)}
                   onComplete={handleMission2Clear}
@@ -1631,7 +1648,7 @@ export default function App() {
               )}
               {screen === "mission-history" && (
                 <ScreenMissionHistory
-                  partner={partner} photo2={photo2} photo3={photo3}
+                  partner={partner} mission2Text={mission2Text} photo2={photo2} photo3={photo3}
                   onBack={() => setScreen("mypage")}
                 />
               )}
