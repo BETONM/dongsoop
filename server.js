@@ -1,10 +1,12 @@
 const express = require('express');
 const db = require('./config/db'); // 방금 만든 db.js 모듈 불러오기
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
+const frontendPath = path.join(__dirname, 'public');
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -21,10 +23,7 @@ app.use('/api/mission', requireAuth, missionApi);
 app.use('/api/user', requireAuth, userApi);
 app.use('/api/history', requireAuth, historyApi);
 
-// 기본 서버 연결 테스트
-app.get('/', (req, res) => {
-    res.send('모여봐요 프메의숲 백엔드 서버가 정상적으로 작동 중입니다!');
-});
+app.use(express.static(frontendPath));
 
 // DB 연결 테스트 API 생성
 app.get('/test-db', async (req, res) => {
@@ -44,6 +43,18 @@ app.get('/test-db', async (req, res) => {
             error: err.message 
         });
     }
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(frontendPath, 'index.html'));
+});
+
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api')) {
+        return next();
+    }
+
+    return res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 app.listen(port, () => {
