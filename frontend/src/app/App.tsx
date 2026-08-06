@@ -4,6 +4,7 @@ import characterImg from "../imports/image.png";
 import loginCharImg from "../imports/Apple.png";
 import tomNookImg from "../imports/image-1.png";
 import acBgImg from "../imports/Animal_Crossing-01.jpg";
+import { api, type MissionStatus } from "./api";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -25,7 +26,6 @@ type Screen =
 interface UserData { name: string; character: string; }
 
 const PARTNERS = ["잭슨", "뽀야미", "너굴", "이자벨", "블랑"];
-const ADMIN_PIN = "1234";
 const TIMER_TOTAL = 180;
 
 // ── Sky / Clouds / Grass ──────────────────────────────────────────────────────
@@ -173,6 +173,29 @@ function Btn({
       }}>
       {children}
     </button>
+  );
+}
+
+function Notice({ type, message, onClose }: { type: "loading" | "error"; message: string; onClose?: () => void }) {
+  const isError = type === "error";
+  return (
+    <div
+      className="absolute left-4 right-4 top-20 z-50 rounded-2xl px-4 py-3 text-sm font-black flex items-center justify-between gap-3"
+      style={{
+        background: isError ? "rgba(255,245,240,0.97)" : "rgba(255,255,255,0.97)",
+        border: `2px solid ${isError ? "#FF9A70" : "rgba(140,210,100,0.65)"}`,
+        color: isError ? "#B84020" : "#3A6020",
+        fontFamily: "'Noto Sans KR', sans-serif",
+        boxShadow: "0 6px 24px rgba(40,100,10,0.16)",
+      }}
+    >
+      <span>{isError ? "앗!" : "잠시만요"} {message}</span>
+      {onClose && (
+        <button type="button" onClick={onClose} className="text-base leading-none" style={{ color: "inherit" }}>
+          ×
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -418,7 +441,7 @@ function PhotoUpload({ preview, onSelect, onClear, icon = "📸" }: {
 
 // 00. Google Login ────────────────────────────────────────────────────────────
 
-function ScreenGoogleLogin({ onLogin }: { onLogin: () => void }) {
+function ScreenGoogleLogin({ onLogin, loading }: { onLogin: () => void; loading?: boolean }) {
   return (
     <div className="flex flex-col h-full overflow-y-auto relative" style={{ scrollbarWidth: "none" }}>
       <Sky /><Clouds />
@@ -474,6 +497,7 @@ function ScreenGoogleLogin({ onLogin }: { onLogin: () => void }) {
           {/* Google login button */}
           <button
             onClick={onLogin}
+            disabled={loading}
             className="w-full flex items-center justify-center gap-3 rounded-2xl py-3.5 font-black text-sm transition-all active:scale-95"
             style={{
               background: "#fff",
@@ -481,9 +505,10 @@ function ScreenGoogleLogin({ onLogin }: { onLogin: () => void }) {
               color: "#283818",
               fontFamily: "'Noto Sans KR', sans-serif",
               boxShadow: "0 5px 0 rgba(140,210,100,0.35), 0 6px 16px rgba(60,140,30,0.12)",
-              cursor: "pointer",
+              cursor: loading ? "not-allowed" : "pointer",
               outline: "none",
               letterSpacing: "0.02em",
+              opacity: loading ? 0.72 : 1,
             }}
             onPointerDown={(e) => {
               e.currentTarget.style.transform = "translateY(4px)";
@@ -506,7 +531,7 @@ function ScreenGoogleLogin({ onLogin }: { onLogin: () => void }) {
               <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
               <path fill="none" d="M0 0h48v48H0z"/>
             </svg>
-            Google로 시작하기
+            {loading ? "로그인 중..." : "Google로 시작하기"}
           </button>
 
           {/* guide text */}
@@ -589,9 +614,17 @@ function CharacterSelect({ value, onChange }: { value: string; onChange: (v: str
   );
 }
 
-function ScreenCharacterInput({ onSubmit }: { onSubmit: (d: UserData) => void }) {
-  const [name, setName] = useState("");
-  const [character, setCharacter] = useState("");
+function ScreenCharacterInput({
+  onSubmit,
+  initialUser,
+  loading,
+}: {
+  onSubmit: (d: UserData) => void;
+  initialUser?: UserData;
+  loading?: boolean;
+}) {
+  const [name, setName] = useState(initialUser?.name || "");
+  const [character, setCharacter] = useState(initialUser?.character || "");
   const ready = name.trim() && character;
 
   return (
@@ -617,9 +650,9 @@ function ScreenCharacterInput({ onSubmit }: { onSubmit: (d: UserData) => void })
               <CharacterSelect value={character} onChange={setCharacter} />
             </div>
           </Card>
-          <Btn onClick={() => ready && onSubmit({ name: name.trim(), character: character.trim() })}
-            color="green" size="lg" fullWidth disabled={!ready}>
-            🍃 미션 받기
+          <Btn onClick={() => ready && !loading && onSubmit({ name: name.trim(), character: character.trim() })}
+            color="green" size="lg" fullWidth disabled={!ready || loading}>
+            {loading ? "저장 중..." : "🍃 미션 받기"}
           </Btn>
           <div className="flex justify-center gap-3 opacity-50 select-none text-2xl">
             {["🌻","🍄","🐝","🌸","🍂"].map((e,i)=><span key={i}>{e}</span>)}
@@ -1289,13 +1322,23 @@ function ScreenMissionHistory({ partner, photo2, photo3, onBack }: {
 
 // 10. Admin PIN ────────────────────────────────────────────────────────────────
 
-function ScreenAdminPin({ onSuccess, onBack }: { onSuccess: () => void; onBack: () => void }) {
+function ScreenAdminPin({ onVerify, onBack }: { onVerify: (pin: string) => Promise<void>; onBack: () => void }) {
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleVerify = () => {
-    if (pin === ADMIN_PIN) { onSuccess(); }
-    else { setError(true); setPin(""); setTimeout(() => setError(false), 1500); }
+  const handleVerify = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      await onVerify(pin);
+    } catch {
+      setError(true);
+      setPin("");
+      setTimeout(() => setError(false), 1500);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -1323,9 +1366,9 @@ function ScreenAdminPin({ onSuccess, onBack }: { onSuccess: () => void; onBack: 
             )}
           </Card>
 
-          <Btn onClick={pin.length === 4 ? handleVerify : undefined}
-            color="green" size="lg" fullWidth disabled={pin.length < 4}>
-            🔐 인증하기
+          <Btn onClick={pin.length === 4 && !loading ? handleVerify : undefined}
+            color="green" size="lg" fullWidth disabled={pin.length < 4 || loading}>
+            {loading ? "인증 중..." : "🔐 인증하기"}
           </Btn>
         </div>
       </div>
@@ -1388,10 +1431,45 @@ export default function App() {
   const [midClearFrom, setMidClearFrom] = useState<1 | 2>(1);
   const [photo2, setPhoto2]   = useState<string | null>(null);
   const [photo3, setPhoto3]   = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   const missionScreens: Screen[] = ["mission1", "mid-clear", "mission2", "mission3", "all-complete", "mypage"];
   const showTabBar = missionScreens.includes(screen);
   const activeTab: "mission" | "mypage" = screen === "mypage" ? "mypage" : "mission";
+
+  const runAction = async (message: string, action: () => Promise<void>) => {
+    setBusy(message);
+    setError("");
+    try {
+      await action();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "요청 처리 중 오류가 발생했어요.");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const toUserData = (apiUser: { name?: string; character?: string; char_name?: string }): UserData => ({
+    name: apiUser.name || "",
+    character: apiUser.char_name || apiUser.character || "",
+  });
+
+  const applyMissionState = (mission: MissionStatus, fallbackPartner = partner) => {
+    const nextPartner = mission.partner || mission.targetCharacter || fallbackPartner;
+    if (nextPartner) setPartner(nextPartner);
+    const nextCount = Math.max(0, Math.min(3, mission.completedCount ?? 0));
+    setCompletedCount(nextCount);
+    return { nextPartner, nextCount };
+  };
+
+  const screenFromMission = (mission: MissionStatus): Screen => {
+    const count = mission.completedCount ?? 0;
+    if (count >= 3 || mission.currentMission === 4) return "all-complete";
+    if (count === 2 || mission.currentMission === 3) return "mission3";
+    if (count === 1 || mission.currentMission === 2) return "mission2";
+    return "mission-intro";
+  };
 
   // Returns the correct mission screen based on progress
   const getCurrentMissionScreen = (): Screen => {
@@ -1406,39 +1484,94 @@ export default function App() {
     else setScreen(getCurrentMissionScreen());
   };
 
+  const handleLogin = () => {
+    runAction("로그인 중...", async () => {
+      await api.login();
+      const apiUser = await api.me();
+      const nextUser = toUserData(apiUser);
+      setUser(nextUser);
+
+      if (!nextUser.name || !nextUser.character) {
+        setScreen("character-input");
+        return;
+      }
+
+      const mission = await api.getMission();
+      applyMissionState(mission);
+      setScreen(screenFromMission(mission));
+    });
+  };
+
   const handleCharacterSubmit = (d: UserData) => {
-    setUser(d);
-    if (isEditMode) {
-      // 수정 모드: 파트너·미션 유지, 마이페이지로 복귀
-      setIsEditMode(false);
-      setScreen("mypage");
-    } else {
-      // 최초 입력: 파트너 배정 후 미션 시작
-      const randomPartner = PARTNERS[Math.floor(Math.random() * PARTNERS.length)];
-      setPartner(randomPartner);
-      setScreen("mission-intro");
-    }
+    runAction("프로필 저장 중...", async () => {
+      const updatedUser = await api.updateProfile(d);
+      const nextUser = toUserData(updatedUser);
+      setUser(nextUser.name || nextUser.character ? nextUser : d);
+
+      const mission = await api.getMission();
+      applyMissionState(mission);
+
+      if (isEditMode) {
+        setIsEditMode(false);
+        setScreen("mypage");
+      } else {
+        setScreen("mission-intro");
+      }
+    });
   };
 
   const handleMission1Clear = () => {
-    setCompletedCount(1);
-    setMidClearFrom(1);
-    setScreen("mid-clear");
+    runAction("미션 1 저장 중...", async () => {
+      await api.completeMission1();
+      const mission = await api.getMission();
+      applyMissionState(mission);
+      setCompletedCount(1);
+      setMidClearFrom(1);
+      setScreen("mid-clear");
+    });
   };
 
   const handleMission2Clear = () => {
-    setCompletedCount(2);
-    setMidClearFrom(2);
-    setScreen("mid-clear");
+    if (!photo2) return;
+    runAction("미션 2 사진 업로드 중...", async () => {
+      await api.completeMission2(photo2);
+      const mission = await api.getMission();
+      applyMissionState(mission);
+      setCompletedCount(2);
+      setMidClearFrom(2);
+      setScreen("mid-clear");
+    });
   };
 
   const handleMission3Clear = () => {
-    setCompletedCount(3);
-    setScreen("all-complete");
+    if (!photo3) return;
+    runAction("미션 3 사진 업로드 중...", async () => {
+      await api.completeMission3(photo3);
+      setCompletedCount(3);
+      setScreen("all-complete");
+    });
   };
 
   const handleMidNext = () => {
     setScreen(midClearFrom === 1 ? "mission2" : "mission3");
+  };
+
+  const handleHistory = () => {
+    runAction("미션 내역 불러오는 중...", async () => {
+      const history = await api.getHistory();
+      if (history.partner || history.targetCharacter) {
+        setPartner(history.partner || history.targetCharacter || partner);
+      }
+      if (history.mission2Image) setPhoto2(history.mission2Image);
+      if (history.mission3Image) setPhoto3(history.mission3Image);
+      setCompletedCount([history.mission1Done, history.mission2Done, history.mission3Done].filter(Boolean).length);
+      setScreen("mission-history");
+    });
+  };
+
+  const handleAdminVerify = async (pin: string) => {
+    await api.verifyAdmin(pin);
+    setScreen("final-complete");
   };
 
   return (
@@ -1456,12 +1589,15 @@ export default function App() {
         <div className="absolute top-3.5 left-1/2 -translate-x-1/2 z-30"
           style={{ width: 120, height: 34, background: "#0A0A0A", borderRadius: 20 }} />
 
+        {busy && <Notice type="loading" message={busy} />}
+        {error && <Notice type="error" message={error} onClose={() => setError("")} />}
+
         {/* content */}
         <div className="absolute inset-0 z-10 flex flex-col pt-14">
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-hidden flex flex-col">
-              {screen === "google-login"    && <ScreenGoogleLogin onLogin={() => setScreen("character-input")} />}
-              {screen === "character-input" && <ScreenCharacterInput onSubmit={handleCharacterSubmit} />}
+              {screen === "google-login"    && <ScreenGoogleLogin onLogin={handleLogin} loading={Boolean(busy)} />}
+              {screen === "character-input" && <ScreenCharacterInput onSubmit={handleCharacterSubmit} initialUser={user} loading={Boolean(busy)} />}
               {screen === "mission-intro"   && <ScreenMissionIntro partner={partner} onStart={() => setScreen("find-partner")} />}
               {screen === "find-partner"   && <ScreenFindPartner partner={partner} onFound={() => setScreen("mission1")} />}
               {screen === "mission1"        && <ScreenMission1 partner={partner} onClear={handleMission1Clear} onBack={() => setScreen("mission-intro")} />}
@@ -1488,7 +1624,7 @@ export default function App() {
               {screen === "mypage"          && (
                 <ScreenMyPage
                   user={user} partner={partner} completedCount={completedCount}
-                  onHistory={() => setScreen("mission-history")}
+                  onHistory={handleHistory}
                   onEdit={() => { setIsEditMode(true); setScreen("character-input"); }}
                   onAdmin={() => setScreen("admin-pin")}
                 />
@@ -1500,7 +1636,7 @@ export default function App() {
                 />
               )}
               {screen === "admin-pin"       && (
-                <ScreenAdminPin onSuccess={() => setScreen("final-complete")} onBack={() => setScreen("mypage")} />
+                <ScreenAdminPin onVerify={handleAdminVerify} onBack={() => setScreen("mypage")} />
               )}
               {screen === "final-complete"  && <ScreenFinalComplete />}
             </div>
